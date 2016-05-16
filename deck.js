@@ -320,29 +320,21 @@ function Deck(){
 }
 
 Deck.prototype = {
-	DrawCard: function(){
+	drawCard: function(){
 		var cardIndex = Math.floor(Math.random() * 52);
-		
+		if(this.cardsInDeck[cardIndex].exists){
+			this.cardsInDeck[cardIndex].exists = false;
+			return this.cardsInDeck[cardIndex];
+		} else {return DarkCard(); }
+	},
+	reShuffle: function(){
+		this.cardsInDeck.forEach(function(card){
+			card.exists = true;
+		});
 	}
 }
 
-	//Testing the use of closures and callbacks:
-	return {
-		DrawCard: function(){
-			var cardIndex = Math.floor(
-				Math.random() * 52);
-			if(cardsInDeck[cardIndex].exists){
-				cardsInDeck[cardIndex].exists = false;
-				return cardsInDeck[cardIndex];
-			} else {return DrawCard(); }
-		},
-		Reshuffle: function(){
-			cardsInDeck.forEach(function(card){
-				card.exists = false;
-			});
-		}
-	};
-}
-
-//Testing area:
+//Testing area (to be deleted before completion):
+var myDeck = new Deck();
+console.log(myDeck.drawCard());
 console.log("Test: Deck.js is okay.")
