@@ -26,6 +26,18 @@ function randomGenerator(array){
 	return array[Math.floor(Math.random() * array.length)];
 }
 
+function compare(itemA, itemB){
+	if(itemA < itemB){
+		return -1;
+	} else if(itemA === itemB){
+		return 0;
+	} else if(itemA > itemB){
+		return 1;
+	} else {
+		return 2;
+	}
+}
+
 /*------ End Helper Functions ------ */
 
 var deck = new Deck();
@@ -35,18 +47,39 @@ var deck = new Deck();
 function Player(name, funds){
 	this.playerName = name;
 	this.funds = funds;
+	this.ante = 0;
 	this.cardStack = [];
 }
 
 Player.prototype = {
 	placeBet: function(amount){
 		this.funds -= amount;
+		this.ante += amount;
 	},
 	placeHit: function(){
 		this.cardStack.push(deck.drawCard());
 	},
 	clearStack: function(){
 		this.cardStack = [];
+	},
+	blackjack: function(){
+		this.funds += 2.5 * this.ante;
+		this.ante = 0;
+	},
+	bust: function(){
+		this.ante = 0;
+	},
+	checkStack: function(){
+		var stackValue = 0;
+		this.cardStack.forEach(function(card){
+			stackValue += card.value;
+		});
+		switch(compare(stackValue, 21)){
+			case -1: break; // Need to continue what ever loop this is
+			case 0: this.blackjack(); break;
+			case 1: this.bust(); break;
+			default: break; // Need default case
+		}
 	}
 };
 
