@@ -1,12 +1,9 @@
 describe("Player", function() {
   var player;
-  var deck;
-  var dealer;
+  var song;
 
   beforeEach(function() {
     player = new Player();
-    dealer = new Player();
-    deck = new Deck();
     song = new Song();
   });
 

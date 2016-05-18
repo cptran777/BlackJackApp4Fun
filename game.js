@@ -102,18 +102,36 @@ var gameTable = {
 	players: []
 };
 
-function createPlayers(){
+function createPlayers(username){
 	var randomNames = ["Steve", "Clint", "Martha", "John", "Matt",
 	"Justin", "Kevin", "Andrew", "Sarah", "Paul", "Gracie"];
 	// To be created/customized using a function: 
-	var userPlayer = new Player(randomGenerator(randomNames), 5000);
-	var npcPlayer01 = new Player(randomGenerator(randomNames), 5000);
-	var npcPlayer02 = new Player(randomGenerator(randomNames), 5000);
-	var npcPlayer03 = new Player(randomGenerator(randomNames), 5000);
-	gameTable.players = [userPlayer, npcPlayer01, npcPlayer02, npcPlayer03];
+	gameTable.userPlayer = new Player(username, 5000);
+	gameTable.npcPlayer01 = new Player(randomGenerator(randomNames), 5000);
+	gameTable.npcPlayer02 = new Player(randomGenerator(randomNames), 5000);
+	gameTable.npcPlayer03 = new Player(randomGenerator(randomNames), 5000);
+	gameTable.players = [gameTable.userPlayer, gameTable.npcPlayer01, 
+		gameTable.npcPlayer02, gameTable.npcPlayer03];
 }
 
-createPlayers();
+function clearWelcome(){
+	$('#WelcomeWindow').remove();
+}
+
+/*------ Game Interface ------ */
+
+$(document).ready(function(){
+	// Upon player entering their name, starts the game and 
+	$('#startGame').click(function(){
+		createPlayers($('#WelcomeForm :input').val());
+		$('#WelcomeWindow').remove();
+		$('.gameWindow').append('<div id="menubox">Hello</div>');
+		$('.gameWindow').append('<div id="dealerwindow"></div>')
+		$('.gameWindow').append('<div id="cardwindow"></div>');
+	});
+
+
+});
 
 // Testing area (to be deleted before completion):
 
