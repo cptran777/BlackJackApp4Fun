@@ -125,7 +125,11 @@ $(document).ready(function(){
 	$('#startGame').click(function(){
 		createPlayers($('#WelcomeForm :input').val());
 		$('#WelcomeWindow').remove();
-		$('.gameWindow').append('<div id="menubox">Hello</div>');
+		$('.gameWindow').append('<div id="menubox"></div>');
+		$('#menubox').append('<button type="button" class="menubutton" id="hitbox">Hit</button>');
+		$('#menubox').append('<button type="button" class="menubutton" id="doubleButton">Double Down</button>');
+		$('#menubox').append('<button type="button" class="menubutton" id="betButton">Place Bet</button>');
+		$('#menubox').append('<button type="button" class="menubutton" id="standButton">Stand</button>');
 		$('.gameWindow').append('<div id="dealerwindow"></div>')
 		$('.gameWindow').append('<div id="cardwindow"></div>');
 	});
