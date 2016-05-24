@@ -49,6 +49,7 @@ function Player(name, funds){
 	this.funds = funds;
 	this.ante = 0;
 	this.cardStack = [];
+	this.condition;
 }
 
 Player.prototype = {
@@ -58,6 +59,7 @@ Player.prototype = {
 	},
 	placeHit: function(){
 		this.cardStack.push(deck.drawCard());
+		this.checkStack();
 	},
 	clearStack: function(){
 		this.cardStack = [];
@@ -66,7 +68,18 @@ Player.prototype = {
 		this.funds += 2.5 * this.ante;
 		this.ante = 0;
 	},
+	win: function(){
+		this.funds += ante * 2;
+		this.ante = 0;
+	},
+	lose: function(){
+		this.ante = 0;
+	}
 	bust: function(){
+		this.ante = 0;
+	},
+	breakEven: function(){
+		this.funds += ante;
 		this.ante = 0;
 	},
 	checkStack: function(){
@@ -74,11 +87,25 @@ Player.prototype = {
 		this.cardStack.forEach(function(card){
 			stackValue += card.value;
 		});
-		switch(compare(stackValue, 21)){
+		return stackValue;
+		/* with some updates in the dealer function/class, this code snippet
+		* may not be needed. keeping as comment for now
+		* switch(compare(stackValue, 21)){
 			case -1: break; // Need to continue what ever loop this is
 			case 0: this.blackjack(); break;
 			case 1: this.bust(); break;
 			default: break; // Need default case
+		}*/
+	}, 
+	setCondition: function(condition){
+		this.condition = condition;
+	},
+	resolve: function(){
+		switch(this.condition){
+			case "blackjack": this.blackjack(); break;
+			case "draw": this.breakEven(); break;
+			case "win": this.win(); break;
+			case "lose": this.lose(); break;
 		}
 	}
 };
@@ -92,14 +119,69 @@ function Dealer(){
 		});
 		this.cardStack = [];
 	};
+	this.dealCards = function(){
+		gameTable.players.forEach(function(player){
+			for(var x = 0; x < 2; x++){
+				player.cardStack.push(deck.drawCard());
+			}
+		});
+		for(var y = 0; y < 2; y++){
+			this.cardStack.push(deck.drawCard());
+		}
+	};
+	this.blackjack = function(){
+		gameTable.players.forEach(function(player){
+			switch(compare(player.checkStack(), 21){
+				case -1: player.setCondition("lose");
+				case 0: 
+			}
+		});
+	};
 }
+
+extend(Dealer, Player);
+
+/*Note: Steps for blackjack
+* 1) Determine value of each player stack
+* 2) set condition for each player
+* 3) Dealer initiates a "resolution" step that calls on resolution based on 
+* the condition set in step 2
+*/
+
+Dealer.prototype.checkDealStack = function(players){
+	var stackValue = 0;
+	this.cardStack.forEach(function(card){
+		stackValue += card.value;
+	});
+	switch(compare(stackValue,21)){
+		case -1: break;
+		case 0: this.blackjack(); break;
+		case 1: break;
+		default: break;
+	}
+};
+
+Dealer.prototype.checkStack = function(players){
+	var stackValue = 0;
+	this.cardStack.forEach(function(card){
+		stackValue += card.value;
+	});
+};
 
 var dealer = new Dealer("Dealer");
 
 /*------ Game Setup ------ */
 
 var gameTable = {
-	players: []
+	players: [],
+	/*Gamestates:
+	* 0 - Not Started: Game not started
+	* 1 - Started: Game has passed welcome screen
+	* 2 - Ready: Ready to deal cards
+	* 3 - In Play: Currently going through a round
+	* 4 - Results: The round is over and the results are being decided. 
+	*/
+	gameState: 0
 };
 
 function createPlayers(username){
@@ -121,6 +203,7 @@ function clearWelcome(){
 /*------ Game Interface ------ */
 
 $(document).ready(function(){
+
 	// Upon player entering their name, starts the game and 
 	$('#startGame').click(function(){
 		createPlayers($('#WelcomeForm :input').val());
@@ -130,11 +213,22 @@ $(document).ready(function(){
 		$('#menubox').append('<button type="button" class="menubutton" id="doubleButton">Double Down</button>');
 		$('#menubox').append('<button type="button" class="menubutton" id="betButton">Place Bet</button>');
 		$('#menubox').append('<button type="button" class="menubutton" id="standButton">Stand</button>');
-		$('.gameWindow').append('<div id="dealerwindow"></div>')
+		$('.gameWindow').append('<div id="dealerwindow"></div>');
 		$('.gameWindow').append('<div id="cardwindow"></div>');
+		gameTable.gameState = "Started";
 	});
 
+	$('.gameWindow').on("click", "#betButton", function(){
+		if(gameTable.gameState === 1 || gameTable.gameState === 2){
+			dealer.dealCards();
+		}
+	});
 
+	$('.gameWindow').on("click", "#hitbox", function(){
+		if(gameTable.gameState === 3){
+			gameTable.userPlayer.placeHit();
+		}
+	});
 });
 
 // Testing area (to be deleted before completion):
