@@ -123,13 +123,16 @@ Player.prototype = {
 					numCardsLeft++;
 					return total + currentCard.value;
 				} else { return total; }
-			});
+			}, 0);
 			return totalVal/numCardsLeft;
 		};
 		var predictedDealerVal = dealerValue + checkDeck();
 		var satisfied = false;
 		// This function will control the NPC's logic loop
 		var playCards = function(currentStack){
+			console.log("Play cards called by " + self.playerName);
+			console.log("Stack is " + currentStack);
+			console.log("PredictedDealerVal is " + predictedDealerVal);
 			if(satisfied === true){
 				return;
 			}
