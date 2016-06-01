@@ -40,6 +40,7 @@ function compare(itemA, itemB){
 
 /*------ End Helper Functions ------ */
 
+// Deck class defined in deck.js
 var deck = new Deck();
 
 /*------ Establishing classes that will interact during game ------ */
@@ -59,7 +60,7 @@ Player.prototype = {
 	},
 	placeHit: function(){
 		this.cardStack.push(deck.drawCard());
-		this.checkStack();
+		//this.checkStack();
 	},
 	clearStack: function(){
 		this.cardStack = [];
@@ -74,9 +75,9 @@ Player.prototype = {
 	},
 	lose: function(){
 		this.ante = 0;
-	}
+	},
 	bust: function(){
-		this.ante = 0;
+		// this.ante = 0;
 	},
 	breakEven: function(){
 		this.funds += ante;
@@ -98,7 +99,9 @@ Player.prototype = {
 		}*/
 	}, 
 	setCondition: function(condition){
-		this.condition = condition;
+		if(!this.condition){
+			this.condition = condition;
+		}
 	},
 	resolve: function(){
 		switch(this.condition){
@@ -107,6 +110,37 @@ Player.prototype = {
 			case "win": this.win(); break;
 			case "lose": this.lose(); break;
 		}
+	},
+	// A simple AI script to allow for NPC controlled players to count
+	// cards and pick the best possible solution for victory
+	autoPlay: function(){
+		var self = this;
+		var dealerValue = dealer.checkStack();
+		var checkDeck = function(){
+			var numCardsLeft = 0;
+			var totalVal = deck.cardsInDeck.reduce(function(total, currentCard){
+				if(currentCard.exists){
+					numCardsLeft++;
+					return total + currentCard.value;
+				} else { return total; }
+			});
+			return totalVal/numCardsLeft;
+		};
+		var predictedDealerVal = dealerValue + checkDeck();
+		var satisfied = false;
+		// This function will control the NPC's logic loop
+		var playCards = function(currentStack){
+			if(satisfied === true){
+				return;
+			}
+			if(currentStack > predictedDealerVal || currentStack + checkDeck > 21){
+				satisfied = true;
+				return;
+			}
+			self.placeHit();
+			return playCards(self.checkStack());
+		};
+		playCards(this.checkStack());
 	}
 };
 
@@ -131,9 +165,9 @@ function Dealer(){
 	};
 	this.blackjack = function(){
 		gameTable.players.forEach(function(player){
-			switch(compare(player.checkStack(), 21){
+			switch(compare(player.checkStack(), 21)){
 				case -1: player.setCondition("lose");
-				case 0: 
+				case 0: player.setCondition("draw");
 			}
 		});
 	};
@@ -148,25 +182,56 @@ extend(Dealer, Player);
 * the condition set in step 2
 */
 
-Dealer.prototype.checkDealStack = function(players){
+Dealer.prototype.checkDealStack = function(){
 	var stackValue = 0;
 	this.cardStack.forEach(function(card){
 		stackValue += card.value;
 	});
 	switch(compare(stackValue,21)){
-		case -1: break;
+		case -1: /*Continue scipt; */break;
 		case 0: this.blackjack(); break;
-		case 1: break;
-		default: break;
+		default: /*Should not exist, throw error*/break;
 	}
 };
 
-Dealer.prototype.checkStack = function(players){
+Dealer.prototype.checkStack = function(){
 	var stackValue = 0;
 	this.cardStack.forEach(function(card){
 		stackValue += card.value;
 	});
+	return stackValue;
 };
+
+/* Essentially an AI script that will have the dealer play cards in the best
+* way possible to beat as many players while still adhering to dealer rules of 
+* blackjack. The function is meant to take the array of players in the 
+* gameTable object each time it is run. 
+*/
+Dealer.prototype.play = function(players){
+	// An array that records the number of each player
+	var playerStacks = [];
+	// Since dealer goes after players, player stacks should all be finalized at 
+	// this point. 
+	players.forEach(function(player){
+		playerStacks.push(player.checkStack());
+	});
+	// Returns the weighted average value of the cards remaining in the deck
+	var checkDeck = function(){
+		var numCardsLeft = 0;
+		var totalVal = deck.cardsInDeck.reduce(function(total, currentCard){
+			if(currentCard.exists === true){
+				numCardsLeft++;
+				return total + currentCard.value;
+			} else {
+				return total;
+			}
+		});
+		return totalVal/numCardsLeft;
+	};
+	while(checkStack() < 17){
+		this.placeHit();
+	}
+}
 
 var dealer = new Dealer("Dealer");
 
@@ -234,8 +299,16 @@ $(document).ready(function(){
 // Testing area (to be deleted before completion):
 
 console.log(dealer.playerName);
+
+dealer.dealCards();
+createPlayers("Charlie");
+gameTable.players.forEach(function(player){
+	player.autoPlay();
+});
+console.log()
+gameTable.players.forEach(function(player){
+	console.log(player.cardStack);
+});
+
 console.log("game.js is okay");
-
-
-
 

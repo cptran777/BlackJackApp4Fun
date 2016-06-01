@@ -321,20 +321,34 @@ function Deck(){
 
 Deck.prototype = {
 	drawCard: function(){
-		var cardIndex = Math.floor(Math.random() * 52);
-		if(this.cardsInDeck[cardIndex].exists){
+		var remainingDeck = this.cardsInDeck.filter(function(card){
+			return card.exists;
+		});
+		console.log("Remaining deck length: " + remainingDeck.length);
+		if(remainingDeck.length === 0){
+			console.log("Deck empty");
+		}
+		var cardIndex = Math.floor(Math.random() * remainingDeck.length);
+		for(var x = 0; x < this.cardsInDeck.length; x++){
+			if(this.cardsInDeck[x].name === remainingDeck[cardIndex].name){
+				this.cardsInDeck[x].exists = false;
+				break;
+			}
+		}
+		return remainingDeck[cardIndex];
+		/* Old code: 
+		if(remainingDeck[cardIndex].exists){
 			this.cardsInDeck[cardIndex].exists = false;
 			return this.cardsInDeck[cardIndex];
-		} else {return DarkCard(); }
+		} else {console.log("does not exist"); return this.drawCard();}
+		*/
 	},
 	reShuffle: function(){
-		this.cardsInDeck.forEach(function(card){
-			card.exists = true;
-		});
+		for(var x = 0; x < this.cardsInDeck.length; x++){
+			this.cardsInDeck[x].exists = true;
+		}
 	}
-}
+};
 
 //Testing area (to be deleted before completion):
-var myDeck = new Deck();
-console.log(myDeck.drawCard());
 console.log("Test: Deck.js is okay.")
