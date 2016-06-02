@@ -192,10 +192,7 @@ extend(Dealer, Player);
 */
 
 Dealer.prototype.checkDealStack = function(){
-	var stackValue = 0;
-	this.cardStack.forEach(function(card){
-		stackValue += card.value;
-	});
+	var stackValue = this.checkStack();
 	switch(compare(stackValue,21)){
 		case -1: /*Continue scipt; */break;
 		case 0: this.blackjack(); break;
@@ -211,9 +208,32 @@ Dealer.prototype.checkStack = function(){
 	return stackValue;
 };
 
+// A function that auto plays for the dealer and then determines the winnings of
+// each player
 Dealer.prototype.play = function(players){
-	while(checkStack() < 17){
+	while(this.checkStack() < 17){
 		this.placeHit();
+	}
+	var stackValue = this.checkStack();
+	if(stackValue > 21){
+		players.forEach(function(player){
+			if(player.checkStack() > 21){
+				player.setCondition("lose");
+			} else { player.setCondition("win"); }
+		});
+	} else {
+		players.forEach(function(player){
+			if(player.checkStack() > 21){
+				player.setCondition("lose");
+			} else {
+				switch( compare(stackValue, player.checkStack()) ){
+					case -1: player.setCondition("win"); break;
+					case 0: player.setCondition("draw"); break;
+					case 1: player.setCondition("lose"); break;
+					default: break; // Should never reach default
+				}
+			}
+		});
 	}
 }
 
@@ -292,6 +312,12 @@ gameTable.players.forEach(function(player){
 console.log()
 gameTable.players.forEach(function(player){
 	console.log(player.cardStack);
+});
+
+dealer.play(gameTable.players);
+
+gameTable.players.forEach(function(player){
+	console.log(player.condition);
 });
 
 console.log("game.js is okay");
