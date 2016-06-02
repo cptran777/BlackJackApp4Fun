@@ -126,14 +126,12 @@ Player.prototype = {
 			}, 0);
 			return totalVal/numCardsLeft;
 		};
-		var predictedDealerVal = Math.round(dealerValue + checkDeck()) + Math.round(
-			dealerValue + checkDeck()) >= 17 ? 0 : Math.round(checkDeck());
+		var predictedDealerVal = Math.round(dealerValue + checkDeck());
+		// Adjustment if the player thinks the dealer will have to play an additional card
+		predictedDealerVal += predictedDealerVal >= 17 ? 0 : Math.round(checkDeck());
 		var satisfied = false;
 		// This function will control the NPC's logic loop
 		var playCards = function(currentStack){
-			console.log("Play cards called by " + self.playerName);
-			console.log("Stack is " + currentStack);
-			console.log("PredictedDealerVal is " + predictedDealerVal);
 			if(satisfied === true){
 				return;
 			}
@@ -213,32 +211,7 @@ Dealer.prototype.checkStack = function(){
 	return stackValue;
 };
 
-/* Essentially an AI script that will have the dealer play cards in the best
-* way possible to beat as many players while still adhering to dealer rules of 
-* blackjack. The function is meant to take the array of players in the 
-* gameTable object each time it is run. 
-*/
 Dealer.prototype.play = function(players){
-	// An array that records the number of each player
-	var playerStacks = [];
-	// Since dealer goes after players, player stacks should all be finalized at 
-	// this point. 
-	players.forEach(function(player){
-		playerStacks.push(player.checkStack());
-	});
-	// Returns the weighted average value of the cards remaining in the deck
-	var checkDeck = function(){
-		var numCardsLeft = 0;
-		var totalVal = deck.cardsInDeck.reduce(function(total, currentCard){
-			if(currentCard.exists === true){
-				numCardsLeft++;
-				return total + currentCard.value;
-			} else {
-				return total;
-			}
-		});
-		return totalVal/numCardsLeft;
-	};
 	while(checkStack() < 17){
 		this.placeHit();
 	}

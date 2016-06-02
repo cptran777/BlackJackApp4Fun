@@ -324,9 +324,8 @@ Deck.prototype = {
 		var remainingDeck = this.cardsInDeck.filter(function(card){
 			return card.exists;
 		});
-		console.log("Remaining deck length: " + remainingDeck.length);
 		if(remainingDeck.length === 0){
-			console.log("Deck empty");
+			// Return some kind of error or function
 		}
 		var cardIndex = Math.floor(Math.random() * remainingDeck.length);
 		for(var x = 0; x < this.cardsInDeck.length; x++){
