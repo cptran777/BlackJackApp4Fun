@@ -111,11 +111,11 @@ Player.prototype = {
 			case "lose": this.lose(); break;
 		}
 	},
-	// A simple AI script to allow for NPC controlled players to count
+	// A script to allow for NPC controlled players to count
 	// cards and pick the best possible solution for victory
 	autoPlay: function(){
 		var self = this;
-		var dealerValue = dealer.checkStack();
+		var dealerValue = dealer.shownCard.value;
 		var checkDeck = function(){
 			var numCardsLeft = 0;
 			var totalVal = deck.cardsInDeck.reduce(function(total, currentCard){
@@ -126,7 +126,8 @@ Player.prototype = {
 			}, 0);
 			return totalVal/numCardsLeft;
 		};
-		var predictedDealerVal = dealerValue + checkDeck();
+		var predictedDealerVal = Math.round(dealerValue + checkDeck()) + Math.round(
+			dealerValue + checkDeck()) >= 17 ? 0 : Math.round(checkDeck());
 		var satisfied = false;
 		// This function will control the NPC's logic loop
 		var playCards = function(currentStack){
@@ -136,9 +137,14 @@ Player.prototype = {
 			if(satisfied === true){
 				return;
 			}
-			if(currentStack > predictedDealerVal || currentStack + checkDeck > 21){
+			if(currentStack > predictedDealerVal || currentStack >= 21){
 				satisfied = true;
 				return;
+			} else if(currentStack + checkDeck() > 21){
+				if(currentStack >= 17){
+					satisfied = true;
+					return;
+				}
 			}
 			self.placeHit();
 			return playCards(self.checkStack());
@@ -149,6 +155,7 @@ Player.prototype = {
 
 function Dealer(){
 	Player.apply(this, arguments);
+	this.shownCard;
 	this.shuffle = function(){
 		deck.reShuffle();
 		gameTable.players.forEach(function(player){
@@ -165,6 +172,7 @@ function Dealer(){
 		for(var y = 0; y < 2; y++){
 			this.cardStack.push(deck.drawCard());
 		}
+		this.shownCard = this.cardStack[0];
 	};
 	this.blackjack = function(){
 		gameTable.players.forEach(function(player){
