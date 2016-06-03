@@ -320,5 +320,11 @@ gameTable.players.forEach(function(player){
 	console.log(player.condition);
 });
 
+gameTable.userPlayer.testFunc = function(){
+	console.log("Updating prototype works");
+}
+
+gameTable.userPlayer.testFunc();
+
 console.log("game.js is okay");
 
